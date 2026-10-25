@@ -12,6 +12,8 @@ if [ -z "${STARTUP:-}" ]; then
     exit 1
 fi
 
+echo "[wrapper] pelican-start.sh running; STARTUP=${STARTUP}"
+
 cd /home/container
 
 # Defensive fallback: only fires if pelican-init.sh was bypassed entirely
