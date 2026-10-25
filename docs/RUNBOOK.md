@@ -108,3 +108,12 @@ Proton launcher: `/home/steam/.steam/root/compatibilitytools.d/current/proton`
   tails the last 40 lines and prints an ERROR 45 s after launch if the process
   is gone. **Next:** read `logs/enshrouded_server.log` and
   `enshrouded_server.json` from the server root.
+- **2026-10-25 (new-server test) — fresh volume hangs at Wine prefix creation.**
+  Console stops after `10-wine-init.sh` prints `Creating new Wine prefix at
+  /home/container/.wine` and the `err:ole … RpcSs` lines. That hook runs
+  `wine wineboot --init` for a system-Wine prefix nothing uses (Proton builds
+  its own) and has no timeout. Fix shipped: image deletes `10-wine-init.sh`.
+  **Outcome: unverified on Wings.** Local findings from the same day: with the
+  real server files and a Wings-style sandbox the wrapper reaches
+  `HostOnline`; `SteamAppId`/`SteamGameId` were not required for that. Without
+  `steamclient.so` the game logs `No SteamClient023` and exits at once.

@@ -27,6 +27,11 @@ USER root
 #   00-common-init.sh — its useful branch requires uid 1000; Wings runs
 #                       containers as the configured uid (999 "container"),
 #                       so all it does is mkdir on the read-only rootfs.
+#   10-wine-init.sh   — wineboots a *system Wine* prefix (~/.wine) that nothing
+#                       uses: the server runs under Proton, which builds its
+#                       own prefix. It has no timeout, so a stuck wineboot
+#                       (observed: fresh volume hangs right after the rpcss
+#                       errors) blocks the whole boot.
 #   99-cleanup.sh     — writes its handler to /opt (read-only) and its trap
 #                       only arms for PID 1, which this script never is.
 RUN mkdir -p /home/container \
@@ -34,6 +39,7 @@ RUN mkdir -p /home/container \
     && ln -s /home/container /home/steam/enshrouded \
     && chown steam:steam /home/container \
     && rm -f /opt/steamcmd-bases/scripts.d/00-common-init.sh \
+            /opt/steamcmd-bases/scripts.d/10-wine-init.sh \
             /opt/steamcmd-bases/scripts.d/99-cleanup.sh \
     && sed -i 's|export WINEPREFIX=${WINEPREFIX:-/home/steam/.proton/pfx}|export WINEPREFIX=${PROTON_WINEPREFIX:-/home/container/.proton/pfx}|' \
          /opt/steamcmd-bases/scripts.d/20-proton-init.sh
