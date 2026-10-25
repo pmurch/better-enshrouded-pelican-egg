@@ -118,6 +118,22 @@ somewhere other than Discord, point *Webhook URL* at any HTTP endpoint that
 accepts Discord-format embed payloads.
 
 
+## Troubleshooting
+
+- **Console stops after `steamcmd.sh: Restarting steamcmd by request...`** —
+  that is SteamCMD's first-run self-update, which the upstream CLI runs with
+  hidden output. The wrapper now performs this step itself in the entrypoint
+  with visible progress and a 15-minute timeout, so it should never sit
+  silent; if it does time out, check the host's outbound network to Steam.
+- **Half-built Proton/Wine prefix** (`Cannot open the wine registry`, DXVK
+  errors, server never reaches `HostOnline` after an early failed boot): the
+  image's Wine init once ran `wineboot` before a display existed on affected
+  builds, leaving a broken prefix. Delete `.proton/` in the server file
+  manager (saves are unaffected) and restart — the prefix rebuilds.
+- **`Read-only file system` lines from `00-common-init.sh` / `99-cleanup.sh`**
+  were removed in the wrapper by deleting those two hooks; if you see them,
+  you're running an older image tag.
+
 ## Notes & limitations
 
 - **Stop grace:** Wings gives a signal-stopped container ~10s before SIGKILL.

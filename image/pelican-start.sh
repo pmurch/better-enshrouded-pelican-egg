@@ -2,13 +2,20 @@
 # PID 1 chain step 2: Pelican's "$STARTUP" runner for the mbround18 image.
 # Wings does not override the container command; it exports the egg's startup
 # line as $STARTUP and expects the image to run it (pelican-eggs convention).
+#
+# DISPLAY / XDG_RUNTIME_DIR / Xvfb / SteamCMD bootstrap were arranged by
+# pelican-init.sh before the base image's init hooks ran.
 set -uo pipefail
+
+if [ -z "${STARTUP:-}" ]; then
+    echo "ERROR: STARTUP is not set — this image expects to run under Pelican Wings." >&2
+    exit 1
+fi
 
 cd /home/container
 
-# Proton/DXVK need an X display even headless. The base image's
-# 20-proton-init.sh normally starts Xvfb and exports DISPLAY, but under the
-# panel's read-only rootfs that hook can bail early, so provide a fallback.
+# Defensive fallback: only fires if pelican-init.sh was bypassed entirely
+# (e.g. `docker run --entrypoint ...`), since init normally sets DISPLAY.
 if [ -z "${DISPLAY:-}" ]; then
     export DISPLAY=:0
     export SDL_VIDEODRIVER=x11

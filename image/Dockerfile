@@ -21,10 +21,20 @@ USER root
 # The enshrouded CLI hard-codes its game directory to /home/steam/enshrouded.
 # Replace it with a symlink to Pelican's writable volume (created at build
 # time, so it survives the read-only rootfs; it resolves at runtime).
+# The game directory is hard-coded in the upstream CLI; symlink it onto the
+# mounted volume. Also drop two base-image init hooks that can never succeed
+# under Pelican and only add console noise:
+#   00-common-init.sh — its useful branch requires uid 1000; Wings runs
+#                       containers as the configured uid (999 "container"),
+#                       so all it does is mkdir on the read-only rootfs.
+#   99-cleanup.sh     — writes its handler to /opt (read-only) and its trap
+#                       only arms for PID 1, which this script never is.
 RUN mkdir -p /home/container \
     && rm -rf /home/steam/enshrouded \
     && ln -s /home/container /home/steam/enshrouded \
-    && chown steam:steam /home/container
+    && chown steam:steam /home/container \
+    && rm -f /opt/steamcmd-bases/scripts.d/00-common-init.sh \
+            /opt/steamcmd-bases/scripts.d/99-cleanup.sh
 
 # Point every writable runtime location at the mounted volume. HOME matters
 # most: steamcmd, the Proton/Steam SDK symlinks, and Proton logs all follow it.
