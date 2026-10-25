@@ -25,8 +25,9 @@ matter for this image (verified against the wings source):
 2. **The root filesystem is read-only.** Everything the server writes (steamcmd
    data, the Proton prefix, SDK symlinks) must live under the mounted volume at
    `/home/container` or in the `/tmp` tmpfs.
-3. The container runs as the Wings-configured UID (root by default), which
-   pairs fine with the above.
+3. The container runs as the Wings-configured UID (`system.user.uid`, seen in
+   practice as `999` / user `container`), not the image's `steam` user — which
+   pairs fine with the above since all writes go to the mounted volume.
 
 The wrapper (`image/`) is layered on `mbround18/enshrouded-docker:proton-latest`
 and does exactly three things:
@@ -120,16 +121,24 @@ accepts Discord-format embed payloads.
 
 ## Troubleshooting
 
-- **Console stops after `steamcmd.sh: Restarting steamcmd by request...`** —
-  that is SteamCMD's first-run self-update, which the upstream CLI runs with
-  hidden output. The wrapper now performs this step itself in the entrypoint
-  with visible progress and a 15-minute timeout, so it should never sit
-  silent; if it does time out, check the host's outbound network to Steam.
-- **Half-built Proton/Wine prefix** (`Cannot open the wine registry`, DXVK
-  errors, server never reaches `HostOnline` after an early failed boot): the
-  image's Wine init once ran `wineboot` before a display existed on affected
-  builds, leaving a broken prefix. Delete `.proton/` in the server file
-  manager (saves are unaffected) and restart — the prefix rebuilds.
+- **Is it stuck or just downloading?** The first boot downloads the dedicated
+  server (several GB) and SteamCMD reports progress with carriage returns
+  *inside captured output* — the panel console can look frozen for minutes at
+  `steamcmd.sh: Starting ... steamcmd`. The `[egg] phase N/4:` markers now
+  show exactly where the boot is; if phase 2 is the quiet one, check free
+  disk space on the Wings host — if it's shrinking, it's downloading.
+- **Panel Reinstall now means something.** Wings runs the egg's install
+  script with the server volume mounted at `/mnt/server`, so reinstall wipes
+  the only state that can end up half-built — the SteamCMD bootstrap cache
+  (`.local`, `.steam`, `Steam`) and the Wine/Proton prefix (`.proton`) — and
+  the next boot rebuilds them from scratch. Saved games (`savegame/`),
+  `enshrouded_server.json`, and the game files are untouched. For a *full*
+  redo (fresh game download too), also delete `enshrouded_server.exe` in the
+  file manager. Note: reinstall never affects the Docker image — Wings
+  re-resolves the image tag at every container start anyway.
+- **Image freshness:** the Action rebuilds this image weekly (so it tracks
+  upstream `mbround18/enshrouded-docker:proton-latest`) and on every push;
+  Wings pulls the new digest automatically at the next server start.
 - **`Read-only file system` lines from `00-common-init.sh` / `99-cleanup.sh`**
   were removed in the wrapper by deleting those two hooks; if you see them,
   you're running an older image tag.

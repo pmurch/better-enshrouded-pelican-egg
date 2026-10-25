@@ -29,7 +29,9 @@ fi
 # on first boot. Do it here instead: progress is visible in the panel console
 # and a stalled bootstrap times out loudly. Once ~/.local/share/Steam is
 # populated (persisted on the server volume), this is skipped entirely.
-if [ ! -f "${HOME}/.local/share/Steam/steamcmd/linux64/steamclient.so" ]; then
+if [ -f "${HOME}/.local/share/Steam/steamcmd/linux64/steamclient.so" ]; then
+    echo "✅ SteamCMD already bootstrapped (cached on server volume)"
+else
     echo "⬇️ Bootstrapping SteamCMD (first boot only, may take a few minutes)..."
     timeout "${STEAMCMD_BOOTSTRAP_TIMEOUT:-900}" steamcmd +quit || echo "⚠️ SteamCMD bootstrap did not complete cleanly (exit $?) — the server will retry it during install."
     echo "✅ SteamCMD bootstrap finished"

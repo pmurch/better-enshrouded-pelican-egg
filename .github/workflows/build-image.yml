@@ -4,6 +4,9 @@ on:
   push:
     branches: [main]
     tags: ["v*"]
+  schedule:
+    # Weekly rebuild so `latest` tracks upstream mbround18/enshrouded-docker:proton-latest
+    - cron: "17 6 * * 1"
   workflow_dispatch:
 
 permissions:
