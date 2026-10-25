@@ -1,0 +1,160 @@
+{
+    "_comment": "DO NOT EDIT: FILE GENERATED AUTOMATICALLY BY PANEL",
+    "meta": {
+        "version": "PTDL_v2",
+        "update_url": null
+    },
+    "exported_at": "2026-10-25T00:00:00+00:00",
+    "name": "Enshrouded (mbround18)",
+    "author": "you@example.com",
+    "uuid": "098be1a8-32af-44ee-941e-a33e2ccb390b",
+    "description": "Enshrouded dedicated server powered by the mbround18\/enshrouded-docker image. Install, config generation, Proton launch, and graceful shutdown are all handled inside the image; the egg only wires it to Pelican. Game files install into the server root on first boot.",
+    "tags": [
+        "enshrouded",
+        "proton"
+    ],
+    "features": [],
+    "docker_images": {
+        "ghcr.io\/YOURORG\/enshrouded-pelican:latest": "ghcr.io\/YOURORG\/enshrouded-pelican:latest"
+    },
+    "file_denylist": [],
+    "startup": "enshrouded setup && { ([ -f enshrouded_server.exe ] && [ \"${UPDATE_ON_START}\" != \"1\" ]) || enshrouded install; } && enshrouded start && tail -c0 -F ./logs\/enshrouded_server.log",
+    "config": {
+        "files": "{}",
+        "startup": {
+            "done": "[Session] 'HostOnline' (up)!"
+        },
+        "logs": "{}",
+        "stop": "^C"
+    },
+    "scripts": {
+        "installation": {
+            "script": "#!\/bin\/bash\r\n# Enshrouded (mbround18) install script\r\n#\r\n# The game download and Proton setup are performed at server start by the\r\n# enshrouded-docker image, so nothing needs to be done here.\r\n\r\necho \"Skipping install: the server is downloaded and launched by the mbround18 image on first boot.\"\r\n",
+            "container": "ghcr.io\/pelican-eggs\/installers:debian",
+            "entrypoint": "bash"
+        }
+    },
+    "variables": [
+        {
+            "name": "[GAME] Server Name",
+            "description": "The name of the server shown in the server browser.",
+            "env_variable": "NAME",
+            "default_value": "My Enshrouded Server",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": "required|string|max:64",
+            "sort": null,
+            "field_type": "text"
+        },
+        {
+            "name": "[GAME] Game Port",
+            "description": "The game connection port. Set to the server's primary allocation port.",
+            "env_variable": "GAME_PORT",
+            "default_value": "15636",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": "required|numeric",
+            "sort": null,
+            "field_type": "text"
+        },
+        {
+            "name": "[GAME] Query Port",
+            "description": "The server query port. Add a second allocation matching this port (UDP and TCP).",
+            "env_variable": "QUERY_PORT",
+            "default_value": "15637",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": "required|numeric",
+            "sort": null,
+            "field_type": "text"
+        },
+        {
+            "name": "[GAME] Max Players",
+            "description": "Maximum number of player slots.",
+            "env_variable": "SLOT_COUNT",
+            "default_value": "16",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": "required|numeric|max:256",
+            "sort": null,
+            "field_type": "text"
+        },
+        {
+            "name": "[GAME] IP",
+            "description": "IP the server binds to. Leave as 0.0.0.0 unless you know you need something else.",
+            "env_variable": "IP",
+            "default_value": "0.0.0.0",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": "required|string|max:64",
+            "sort": null,
+            "field_type": "text"
+        },
+        {
+            "name": "[GAME] Admin Password",
+            "description": "Password for the Admin user group.",
+            "env_variable": "SET_GROUP_ADMIN_PASSWORD",
+            "default_value": "",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": "nullable|string|max:64",
+            "sort": null,
+            "field_type": "text"
+        },
+        {
+            "name": "[GAME] Guest Password",
+            "description": "Password for the Guest user group.",
+            "env_variable": "SET_GROUP_GUEST_PASSWORD",
+            "default_value": "",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": "nullable|string|max:64",
+            "sort": null,
+            "field_type": "text"
+        },
+        {
+            "name": "[SERVER] Update On Start",
+            "description": "Check for a server update via SteamCMD on every boot. The game is always installed automatically on first boot.",
+            "env_variable": "UPDATE_ON_START",
+            "default_value": "0",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": "boolean",
+            "sort": null,
+            "field_type": "text"
+        },
+        {
+            "name": "[SERVER] Voice Chat Mode",
+            "description": "Proximity or Global.",
+            "env_variable": "VOICE_CHAT_MODE",
+            "default_value": "Proximity",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": "required|string|in:Proximity,Global",
+            "sort": null,
+            "field_type": "text"
+        },
+        {
+            "name": "[SERVER] Enable Voice Chat",
+            "description": "Enable in-game voice chat.",
+            "env_variable": "ENABLE_VOICE_CHAT",
+            "default_value": "false",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": "required|string|in:true,false",
+            "sort": null,
+            "field_type": "text"
+        },
+        {
+            "name": "[SERVER] Enable Text Chat",
+            "description": "Enable in-game text chat.",
+            "env_variable": "ENABLE_TEXT_CHAT",
+            "default_value": "false",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": "required|string|in:true,false",
+            "sort": null,
+            "field_type": "text"
+        }
+    ]
+}
