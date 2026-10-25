@@ -8,17 +8,17 @@
     "name": "Enshrouded (mbround18)",
     "author": "pmurch@noway.com",
     "uuid": "098be1a8-32af-44ee-941e-a33e2ccb390b",
-    "description": "Enshrouded dedicated server powered by the mbround18\/enshrouded-docker image. Install, config generation, Proton launch, and graceful shutdown are all handled inside the image; the egg only wires it to Pelican. Game files install into the server root on first boot.",
+    "description": "Enshrouded dedicated server powered by the mbround18/enshrouded-docker image. Install, config generation, Proton launch, and graceful shutdown are all handled inside the image; the egg only wires it to Pelican. Game files install into the server root on first boot.",
     "tags": [
         "enshrouded",
         "proton"
     ],
     "features": [],
     "docker_images": {
-        "ghcr.io\/pmurch\/enshrouded-pelican:latest": "ghcr.io\/pmurch\/enshrouded-pelican:latest"
+        "ghcr.io/pmurch/enshrouded-pelican:latest": "ghcr.io/pmurch/enshrouded-pelican:latest"
     },
     "file_denylist": [],
-    "startup": "echo '[egg] phase 1\/4: runtime setup' && enshrouded setup && echo '[egg] phase 2\/4: install (downloads game on first boot — SteamCMD progress uses carriage returns, so long quiet stretches are normal)' && { ([ -f enshrouded_server.exe ] && [ \"${UPDATE_ON_START}\" != \"1\" ]) || enshrouded install; } && { enshrouded monitor >\/dev\/null 2>&1 & } && echo '[egg] phase 3\/4: starting server' && enshrouded start && echo '[egg] phase 4\/4: following server logs (game errors: logs\/server.err)' && tail -c0 -F ./logs\/server.log ./logs\/server.err ./logs\/enshrouded_server.log",
+    "startup": "echo '[egg] phase 1/4: runtime setup' && enshrouded setup && echo '[egg] phase 2/4: install (downloads game on first boot \u2014 SteamCMD progress uses carriage returns, so long quiet stretches are normal)' && { ([ -f enshrouded_server.exe ] && [ \"${UPDATE_ON_START}\" != \"1\" ]) || enshrouded install; } && { enshrouded monitor >/dev/null 2>&1 & } && echo '[egg] phase 3/4: starting server' && enshrouded start && echo '[egg] phase 4/4: following server logs (game errors: logs/server.err)' && tail -c0 -F ./logs/server.log ./logs/server.err ./logs/enshrouded_server.log",
     "config": {
         "files": "{}",
         "startup": {
@@ -29,8 +29,8 @@
     },
     "scripts": {
         "installation": {
-            "script": "#!\/bin\/bash\r\n# Enshrouded (mbround18) install\/reinstall hook\r\n#\r\n# The game itself is downloaded by the mbround18 image when the server first\r\n# starts, so there is nothing to install here. This script gives the panel's\r\n# Reinstall button real meaning: it wipes runtime state accumulated on the\r\n# server volume (SteamCMD bootstrap cache and the Wine\/Proton prefix), which\r\n# is the only state that can ever end up half-built. Saved games (savegame\/),\r\n# server config (enshrouded_server.json), and the game files themselves are\r\n# left untouched; the next boot rebuilds the wiped state.\r\n\r\ncd \/mnt\/server || exit 1\r\n\r\necho \"Reinstall: wiping runtime state (SteamCMD cache, Wine\/Proton prefix)...\"\r\nrm -rf .proton .wine .local .steam Steam\r\necho \"Done. Next start re-bootstraps SteamCMD and rebuilds the Proton prefix.\"\r\necho \"Tip: to also force a fresh game download, delete enshrouded_server.exe in the file manager.\"\r\n",
-            "container": "ghcr.io\/pelican-eggs\/installers:debian",
+            "script": "#!/bin/bash\r\n# Enshrouded (mbround18) install/reinstall hook\r\n#\r\n# The game itself is downloaded by the mbround18 image when the server first\r\n# starts, so there is nothing to install here. This script gives the panel's\r\n# Reinstall button real meaning: it wipes runtime state accumulated on the\r\n# server volume (SteamCMD bootstrap cache and the Wine/Proton prefix), which\r\n# is the only state that can ever end up half-built. Saved games (savegame/),\r\n# server config (enshrouded_server.json), and the game files themselves are\r\n# left untouched; the next boot rebuilds the wiped state.\r\n\r\ncd /mnt/server || exit 1\r\n\r\necho \"Reinstall: wiping runtime state (SteamCMD cache, Wine/Proton prefix)...\"\r\nrm -rf .proton .wine .local .steam Steam\r\necho \"Done. Next start re-bootstraps SteamCMD and rebuilds the Proton prefix.\"\r\necho \"Tip: to also force a fresh game download, delete enshrouded_server.exe in the file manager.\"\r\n",
+            "container": "ghcr.io/pelican-eggs/installers:debian",
             "entrypoint": "bash"
         }
     },
@@ -158,7 +158,7 @@
         },
         {
             "name": "[SERVER] Webhook URL",
-            "description": "Optional webhook (e.g. Discord) notified on server start\/stop and player join\/leave. Leave empty to disable notifications.",
+            "description": "Optional webhook (e.g. Discord) notified on server start/stop and player join/leave. Leave empty to disable notifications.",
             "env_variable": "WEBHOOK_URL",
             "default_value": "",
             "user_viewable": true,
@@ -169,12 +169,23 @@
         },
         {
             "name": "[SYSTEM] Health Port",
-            "description": "Port serving the image health endpoints (\/live, \/ready, \/health) for external monitoring. Set 0 to disable.",
+            "description": "Port serving the image health endpoints (/live, /ready, /health) for external monitoring. Set 0 to disable.",
             "env_variable": "HTTP_PORT",
             "default_value": "3000",
             "user_viewable": true,
             "user_editable": true,
             "rules": "required|numeric",
+            "sort": null,
+            "field_type": "text"
+        },
+        {
+            "name": "[Advanced] Disable Wine fsync",
+            "description": "Wings cannot pass /dev/ntsync to containers, so Proton's fsync fallback is used for NT synchronization. Upstream reports it is unstable during Enshrouded's multithreaded startup (symptom: boot hangs after DXVK initializes, CPU goes idle). Keep 1 (use Wine native sync: slower, deadlock-free). Set 0 to re-enable fsync if your Wings ever exposes /dev/ntsync.",
+            "env_variable": "PROTON_NO_FSYNC",
+            "default_value": "1",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": "required|in:0,1",
             "sort": null,
             "field_type": "text"
         }

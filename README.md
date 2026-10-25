@@ -137,6 +137,17 @@ accepts Discord-format embed payloads.
   `.proton`) once after upgrading from an older wrapper image so the tainted
   prefix is gone. GE-Proton also writes `$HOME/steam-2278520.log` crash logs
   when enabled — check the server root in the file manager.
+- **Why boots can hang at Phase 4 — the `ntsync` platform gap.** Upstream's
+  compose marks `/dev/ntsync` as required: modern Proton uses the kernel's
+  ntsync driver for Windows NT synchronization primitives, falls back to
+  `fsync`, and upstream documents that fallback as unstable during
+  Enshrouded's heavy multithreaded startup init (hangs right after DXVK
+  initializes, CPU drops to idle). Wings has no way to pass device nodes into
+  containers, so the wrapper defaults `PROTON_NO_FSYNC=1` (+ `WINEFSYNC=0`),
+  which drops Wine to its slow-but-deadlock-free native sync. The egg exposes
+  this as the `[Advanced] Disable Wine fsync` variable. GE-Proton's own debug
+  log (`PROTON_LOG=1` is set by the CLI) is written to `steam-2278520.log` in
+  the server root whenever the game misbehaves — it pinpoints stall locations.
 - **Panel Reinstall now means something.** Wings runs the egg's install
   script with the server volume mounted at `/mnt/server`, so reinstall wipes
   the only state that can end up half-built — the SteamCMD bootstrap cache

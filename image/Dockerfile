@@ -49,6 +49,12 @@ RUN mkdir -p /home/container \
 # same directory first, Proton's bundled wine inherits a foreign, newer-version
 # prefix it cannot use and the game dies before writing any session log.
 # (Upstream gets this ordering right only because WINEPREFIX is unset there.)
+#
+# PROTON_NO_FSYNC=1: Wings cannot pass /dev/ntsync into containers, so Proton
+# would use the fsync fallback, which upstream documents as unstable during
+# Enshrouded's heavy multithreaded startup init (observed: hangs with idle CPU
+# right after DXVK comes up). Disabling fsync drops Wine to native sync —
+# slower, but deadlock-free. Override with the PROTON_NO_FSYNC server variable.
 ENV HOME=/home/container \
     USER=steam \
     LD_LIBRARY_PATH=/home/container/.steam/sdk32:/home/container/.steam/sdk64:/home/steam/.steam/sdk32:/home/steam/.steam/sdk64 \
@@ -56,6 +62,8 @@ ENV HOME=/home/container \
     STEAM_COMPAT_DATA_PATH=/home/container/.proton \
     WINEPREFIX=/home/container/.wine \
     PROTON_PATH=/home/steam/.steam/root/compatibilitytools.d/current \
+    PROTON_NO_FSYNC=1 \
+    WINEFSYNC=0 \
     LAUNCH_MODE=proton
 
 WORKDIR /home/container
