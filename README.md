@@ -43,13 +43,21 @@ and does exactly three things:
 
 ## Setting up
 
+Wings can only *pull* images — neither Wings nor an egg's install script can
+build one (the install script itself runs inside a sandboxed installer
+container with no Docker access). So the wrapper image must exist either in a
+registry or locally on the Wings host:
+
 1. **Build the image.** Either:
    - push this repo to GitHub — the included Action publishes
-     `ghcr.io/<your-org>/enshrouded-pelican:latest`; or
-   - build it on the Wings host:
-     `docker build -t enshrouded-pelican image/`
-     (an egg may reference local images with a `~` prefix, e.g.
-     `~enshrouded-pelican:latest`, which skips registry pulling).
+     `ghcr.io/<your-org>/enshrouded-pelican:latest` (no secrets needed; the
+     default `GITHUB_TOKEN` has registry write). Wings re-checks the tag on
+     every boot, so servers pick up image updates automatically; or
+   - build it on the Wings host once:
+     `docker build -t enshrouded-pelican ./image`
+     and reference it in the egg as `~enshrouded-pelican:latest` — the `~`
+     prefix tells Wings it is a local image and to skip pulling. Manual
+     rebuilds required on upstream changes; only works on that host.
 2. **Edit the egg JSON**: replace `ghcr.io/YOURORG/...` in `docker_images`
    with your image reference (and `author` if you like).
 3. **Import the egg** in the panel (Nests → Import).
