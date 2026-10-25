@@ -32,7 +32,7 @@ something new.
 | Symptom | Likely cause / action |
 |---|---|
 | Stuck at phase 2, quiet | First-boot download (~8 GB). Check host disk. |
-| Phase 4 reached, no `HostOnline`, low memory | Game process not launching. Read `steam-2278520.log` (server root). |
+| Phase 4 reached, no `HostOnline`, low memory | Read `steam-2278520.log` (server root). If it ends after `steamclient_init_registry Failed to connect to Steam` with no game output, the game is launched but silent: raise `WINEDEBUG` (see env table) to see where it stalls. `winebth ZwLoadDriver c0000142` is benign. |
 | `server.err` full of DXVK / llvmpipe / EDID lines | Noise from Proton's `xalia.exe`, **not** the server. Harmless; disabled via `PROTON_USE_XALIA=0`. |
 | `ProtonFixes … unit test` warnings | Normal. ProtonFixes only runs for the `waitforexitandrun` verb; upstream uses `run`. |
 | Died on a foreign/newer Wine prefix | System wine touched Proton's prefix. `WINEPREFIX` must stay `~/.wine`; Proton uses `$STEAM_COMPAT_DATA_PATH/pfx`. Use panel **Reinstall** to wipe `.proton`. |
@@ -44,6 +44,7 @@ something new.
 |---|---|
 | `PROTON_NO_FSYNC=1`, `WINEFSYNC=0` | No `/dev/ntsync` under Wings; fsync fallback is unstable at startup. Egg variable `PROTON_NO_FSYNC` overrides. Console shows `wineserver: using server-side synchronization` when active. |
 | `SteamAppId` / `SteamGameId` = `2278520` | Upstream's launcher sets neither. Proton writes **no** debug log without `SteamGameId`, and Wine output then spills into `server.err`. Also gives Steamworks an app id. |
+| `WINEDEBUG` (egg variable) | Default `fixme-all`. For stalls set `fixme-all,+loaddll,+process,+timestamp`; output lands in `steam-2278520.log`. |
 | `PROTON_USE_XALIA=0` | Headless server doesn't need Xalia; removes spurious Vulkan startup. |
 | `HOME`, `STEAM_COMPAT_*`, `WINEPREFIX` → `/home/container/...` | Everything writable must live on the volume. |
 
@@ -85,3 +86,13 @@ Proton launcher: `/home/steam/.steam/root/compatibilitytools.d/current/proton`
   `PROTON_USE_XALIA=0` (commit `62d3ddc`). **Outcome: unverified** — update
   this entry with the result after the next server restart
   (`steam-2278520.log` should now exist).
+- **2026-10-25 (later) — first real Proton log.** `steam-2278520.log` now
+  exists. It shows `Command: ['/home/steam/enshrouded/enshrouded_server.exe']`,
+  options `gamedrive forcelgadd nofsync`, benign `winebth` driver error, then
+  `steamclient_init_registry Failed to connect to Steam` and nothing more;
+  `server.log` empty, `server.err` only ProtonFixes warnings (Xalia noise gone,
+  so `PROTON_USE_XALIA=0` worked). Local check (arm64 host, amd64 image under
+  emulation): Proton + Wine launch a trivial exe in ~3 s with the same env, so
+  the base environment is sound. **Still unknown** why the server is silent and
+  small in memory. Next step: `WINEDEBUG=fixme-all,+loaddll,+process,+timestamp`
+  and read the log.

@@ -188,6 +188,17 @@
             "rules": "required|in:0,1",
             "sort": null,
             "field_type": "text"
+        },
+        {
+            "name": "[Advanced] Wine Debug Channels",
+            "description": "WINEDEBUG value passed to Wine. Default fixme-all keeps logs quiet. To trace a stall, set e.g. fixme-all,+loaddll,+process,+timestamp (very verbose; output goes to steam-2278520.log in the server root). Reset to fixme-all afterwards.",
+            "env_variable": "WINEDEBUG",
+            "default_value": "fixme-all",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": "required|string|max:200",
+            "sort": null,
+            "field_type": "text"
         }
     ]
 }
