@@ -145,9 +145,10 @@ accepts Discord-format embed payloads.
   initializes, CPU drops to idle). Wings has no way to pass device nodes into
   containers, so the wrapper defaults `PROTON_NO_FSYNC=1` (+ `WINEFSYNC=0`),
   which drops Wine to its slow-but-deadlock-free native sync. The egg exposes
-  this as the `[Advanced] Disable Wine fsync` variable. GE-Proton's own debug
-  log (`PROTON_LOG=1` is set by the CLI) is written to `steam-2278520.log` in
-  the server root whenever the game misbehaves — it pinpoints stall locations.
+  this as the `[Advanced] Disable Wine fsync` variable. GE-Proton's debug log
+  (`PROTON_LOG=1` is set by the CLI) is written to `steam-2278520.log` in the
+  server root; the image sets `SteamGameId=2278520` because Proton writes no
+  log at all without it.
 - **Panel Reinstall now means something.** Wings runs the egg's install
   script with the server volume mounted at `/mnt/server`, so reinstall wipes
   the only state that can end up half-built — the SteamCMD bootstrap cache

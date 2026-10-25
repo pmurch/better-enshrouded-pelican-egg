@@ -55,6 +55,16 @@ RUN mkdir -p /home/container \
 # Enshrouded's heavy multithreaded startup init (observed: hangs with idle CPU
 # right after DXVK comes up). Disabling fsync drops Wine to native sync —
 # slower, but deadlock-free. Override with the PROTON_NO_FSYNC server variable.
+#
+# PROTON_USE_XALIA=0: the DXVK/llvmpipe/EDID lines in server.err come from
+# Proton's xalia.exe (gamepad-UI helper, "Game: xalia.exe"), not from the
+# server; a headless server has no use for it.
+#
+# SteamAppId/SteamGameId: the upstream launcher (`dockerify run`) never sets
+# them. Proton only opens its debug log when SteamGameId is set (otherwise
+# steam-<id>.log is never written and Wine output spills into server.err), and
+# the server's Steamworks init has no app id to bind to. Setting them gives
+# $HOME/steam-2278520.log and a normal Steam-launched environment.
 ENV HOME=/home/container \
     USER=steam \
     LD_LIBRARY_PATH=/home/container/.steam/sdk32:/home/container/.steam/sdk64:/home/steam/.steam/sdk32:/home/steam/.steam/sdk64 \
@@ -64,6 +74,9 @@ ENV HOME=/home/container \
     PROTON_PATH=/home/steam/.steam/root/compatibilitytools.d/current \
     PROTON_NO_FSYNC=1 \
     WINEFSYNC=0 \
+    PROTON_USE_XALIA=0 \
+    SteamAppId=2278520 \
+    SteamGameId=2278520 \
     LAUNCH_MODE=proton
 
 WORKDIR /home/container
