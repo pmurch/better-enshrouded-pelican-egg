@@ -80,6 +80,13 @@ console stays focused on the game log). This powers:
 
 - **Webhooks** — set *Webhook URL* (e.g. a Discord webhook) to receive
   server started / stopping / stopped and player joined / left events.
+  For non-Discord endpoints (n8n, custom HTTP), the payload is plain JSON:
+  `{"notification_type": "<server name>: Player Joined", "message": "Player
+  Alice has joined the adventure!", "data": null}` — the player name is only
+  in `message`, so parse it there. The endpoint must respond 2xx; a delivery
+  failure kills the webhook watcher thread until the next restart (the game
+  server itself is unaffected). Leave `STOP_DELAY` unset — Wings' ~10s stop
+  grace cannot absorb it.
 - **Health endpoints** — `/live`, `/ready`, `/health` on *Health Port*
   (default 3000, `0` disables). Not visible through Wings; reach it via an
   allocation on the Wings network or port-forward if you monitor externally.
