@@ -6,7 +6,7 @@
     },
     "exported_at": "2026-10-25T00:00:00+00:00",
     "name": "Enshrouded (mbround18)",
-    "author": "pmurch",
+    "author": "pmurch@noway.com",
     "uuid": "098be1a8-32af-44ee-941e-a33e2ccb390b",
     "description": "Enshrouded dedicated server powered by the mbround18\/enshrouded-docker image. Install, config generation, Proton launch, and graceful shutdown are all handled inside the image; the egg only wires it to Pelican. Game files install into the server root on first boot.",
     "tags": [
