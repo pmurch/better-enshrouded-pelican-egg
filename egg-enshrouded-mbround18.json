@@ -18,7 +18,7 @@
         "ghcr.io\/YOURORG\/enshrouded-pelican:latest": "ghcr.io\/YOURORG\/enshrouded-pelican:latest"
     },
     "file_denylist": [],
-    "startup": "enshrouded setup && { ([ -f enshrouded_server.exe ] && [ \"${UPDATE_ON_START}\" != \"1\" ]) || enshrouded install; } && enshrouded start && tail -c0 -F ./logs\/enshrouded_server.log",
+    "startup": "enshrouded setup && { ([ -f enshrouded_server.exe ] && [ \"${UPDATE_ON_START}\" != \"1\" ]) || enshrouded install; } && { enshrouded monitor >\/dev\/null 2>&1 & } && enshrouded start && tail -c0 -F ./logs\/enshrouded_server.log",
     "config": {
         "files": "{}",
         "startup": {
@@ -153,6 +153,28 @@
             "user_viewable": true,
             "user_editable": true,
             "rules": "required|string|in:true,false",
+            "sort": null,
+            "field_type": "text"
+        },
+        {
+            "name": "[SERVER] Webhook URL",
+            "description": "Optional webhook (e.g. Discord) notified on server start\/stop and player join\/leave. Leave empty to disable notifications.",
+            "env_variable": "WEBHOOK_URL",
+            "default_value": "",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": "nullable|string|max:500",
+            "sort": null,
+            "field_type": "text"
+        },
+        {
+            "name": "[SYSTEM] Health Port",
+            "description": "Port serving the image health endpoints (\/live, \/ready, \/health) for external monitoring. Set 0 to disable.",
+            "env_variable": "HTTP_PORT",
+            "default_value": "3000",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": "required|numeric",
             "sort": null,
             "field_type": "text"
         }

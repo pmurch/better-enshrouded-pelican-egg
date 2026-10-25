@@ -68,10 +68,39 @@ The egg exposes the common knobs (name, ports, slots, group passwords, update
 on start, chat toggles). **Everything** the upstream image supports works via
 normal panel environment variables — add them on the server's *Startup* tab:
 all game settings (`PLAYER_HEALTH_FACTOR`, `TOMBSTONE_MODE`, …, with
-`GAME_SETTINGS_PRESET=Custom`), arbitrary group permissions
-(`SET_GROUP_<NAME>_…`), `WEBHOOK_URL`, etc. Environment variables always win
+`GAME_SETTINGS_PRESET=Custom`) and arbitrary group permissions
+(`SET_GROUP_<NAME>_…`). Environment variables always win
 over values hand-edited in `enshrouded_server.json`, which lives in the server
 file manager alongside the saves.
+
+## Events & player counts
+
+The startup runs `enshrouded monitor` in the background (output silenced; the
+console stays focused on the game log). This powers:
+
+- **Webhooks** — set *Webhook URL* (e.g. a Discord webhook) to receive
+  server started / stopping / stopped and player joined / left events.
+- **Health endpoints** — `/live`, `/ready`, `/health` on *Health Port*
+  (default 3000, `0` disables). Not visible through Wings; reach it via an
+  allocation on the Wings network or port-forward if you monitor externally.
+- **`AUTO_UPDATE` / `SCHEDULED_RESTART`** — now functional; set them as custom
+  environment variables on the Startup tab (cron expressions via
+  `AUTO_UPDATE_SCHEDULE` / `SCHEDULED_RESTART_SCHEDULE`). Prefer the panel's
+  own *Schedules* feature where possible — Wings learns about those restarts.
+
+**Player counts are not shown in the panel and cannot be pushed to it**:
+neither Wings nor the Pelican panel models a player count (Wings reports only
+CPU/RAM/disk; there is no "players" field or API to update one — same is true
+of Pterodactyl). Join/leave lines are visible live in the server console
+(the game writes them to its session log, which the egg tails). For a real
+player-count feed, poll the **Steam query port** (the *Query Port* allocation,
+UDP): the server answers standard server queries with name, players, and max
+slots. Tools like `gamedig` (`gamedig --type protocol --host IP --query-port
+15637`) or any game-server exporter (Prometheus/Grafana, server-browser sites)
+read it directly — no panel integration needed. If you want webhook events
+somewhere other than Discord, point *Webhook URL* at any HTTP endpoint that
+accepts Discord-format embed payloads.
+
 
 ## Notes & limitations
 
@@ -79,9 +108,6 @@ file manager alongside the saves.
   The egg stop signal triggers `enshrouded stop` (graceful save) but very large
   worlds may not finish saving in that window. The game autosaves periodically,
   so risk is limited.
-- **Image-managed extras** (webhooks, scheduled restart/auto-update cron,
-  `/health` endpoint) run under `enshrouded monitor`, which this egg does not
-  run. To keep the server updated, enable the *Update On Start* variable.
 - **`ntsync` kernel driver:** the upstream README recommends a Linux ≥6.14
   host with `/dev/ntsync`. Wings cannot pass devices into game containers, so
   Proton falls back to `fsync` — generally works, slightly less stable during
