@@ -12,6 +12,14 @@ set -uo pipefail
 export XDG_RUNTIME_DIR=/tmp/xdg
 mkdir -p "${XDG_RUNTIME_DIR}" && chmod 700 "${XDG_RUNTIME_DIR}"
 
+# The base image's Proton detection follows $HOME, but Proton itself is baked
+# into the image at /home/steam/.steam/root (read-only, and nothing needs to
+# write there at runtime — steamcmd lives under ~/.local/share, the prefix
+# under ~/.proton). Link it into the relocated HOME so 20-proton-init.sh can
+# find and initialize Proton instead of exiting 1.
+mkdir -p "${HOME}/.steam"
+[ -e "${HOME}/.steam/root" ] || ln -s /home/steam/.steam/root "${HOME}/.steam/root"
+
 # A display must exist BEFORE the init hooks touch Wine/Proton (wineboot
 # fails without one), so Xvfb starts here rather than in pelican-start.sh.
 # The base image's 20-proton-init.sh defers to an already-set DISPLAY.

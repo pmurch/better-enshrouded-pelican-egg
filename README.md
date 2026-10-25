@@ -127,6 +127,16 @@ accepts Discord-format embed payloads.
   `steamcmd.sh: Starting ... steamcmd`. The `[egg] phase N/4:` markers now
   show exactly where the boot is; if phase 2 is the quiet one, check free
   disk space on the Wings host — if it's shrinking, it's downloading.
+- **Server reaches phase 4 but never prints `HostOnline`** — the game's own
+  stdout/stderr are redirected by the CLI to `logs/server.log` /
+  `logs/server.err` (visible in the panel file manager and now followed by
+  the console). A classic cause was fixed in the wrapper: Proton must build
+  its own prefix (`~/.proton/pfx`, via `STEAM_COMPAT_DATA_PATH`); if the
+  system wine is allowed to `wineboot` that same directory first, Proton's
+  bundled wine dies on the foreign prefix. Do a panel **Reinstall** (wipes
+  `.proton`) once after upgrading from an older wrapper image so the tainted
+  prefix is gone. GE-Proton also writes `$HOME/steam-2278520.log` crash logs
+  when enabled — check the server root in the file manager.
 - **Panel Reinstall now means something.** Wings runs the egg's install
   script with the server volume mounted at `/mnt/server`, so reinstall wipes
   the only state that can end up half-built — the SteamCMD bootstrap cache

@@ -34,18 +34,27 @@ RUN mkdir -p /home/container \
     && ln -s /home/container /home/steam/enshrouded \
     && chown steam:steam /home/container \
     && rm -f /opt/steamcmd-bases/scripts.d/00-common-init.sh \
-            /opt/steamcmd-bases/scripts.d/99-cleanup.sh
+            /opt/steamcmd-bases/scripts.d/99-cleanup.sh \
+    && sed -i 's|export WINEPREFIX=${WINEPREFIX:-/home/steam/.proton/pfx}|export WINEPREFIX=${PROTON_WINEPREFIX:-/home/container/.proton/pfx}|' \
+         /opt/steamcmd-bases/scripts.d/20-proton-init.sh
 
 # Point every writable runtime location at the mounted volume. HOME matters
 # most: steamcmd, the Proton/Steam SDK symlinks, and Proton logs all follow it.
 # PROTON_PATH is deliberately the *directory* here; the base image's init hook
 # appends /proton and persists the real file path at container start.
+#
+# WINEPREFIX must be the *system Wine* prefix (~/.wine), NOT Proton's prefix
+# directory: Proton always uses $STEAM_COMPAT_DATA_PATH/pfx for itself, and if
+# the base image's 10-wine-init.sh wineboots the system wine (11.x) into that
+# same directory first, Proton's bundled wine inherits a foreign, newer-version
+# prefix it cannot use and the game dies before writing any session log.
+# (Upstream gets this ordering right only because WINEPREFIX is unset there.)
 ENV HOME=/home/container \
     USER=steam \
     LD_LIBRARY_PATH=/home/container/.steam/sdk32:/home/container/.steam/sdk64:/home/steam/.steam/sdk32:/home/steam/.steam/sdk64 \
     STEAM_COMPAT_CLIENT_INSTALL_PATH=/home/container/.steam/steam \
     STEAM_COMPAT_DATA_PATH=/home/container/.proton \
-    WINEPREFIX=/home/container/.proton/pfx \
+    WINEPREFIX=/home/container/.wine \
     PROTON_PATH=/home/steam/.steam/root/compatibilitytools.d/current \
     LAUNCH_MODE=proton
 
