@@ -1,7 +1,7 @@
 # Runbook: Enshrouded on Pelican
 
 Operational knowledge for debugging this egg + image. **Keep it current** — see
-`CLAUDE.md`. Add a dated entry to the incident log whenever you learn
+`AGENTS.md`. Add a dated entry to the incident log whenever you learn
 something new.
 
 ## How a boot works

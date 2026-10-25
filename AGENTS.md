@@ -1,4 +1,4 @@
-# Agent instructions
+# Agent instructions (AGENTS.md)
 
 This repo packages mbround18/enshrouded-docker as a Pelican/Wings egg
 (`egg-enshrouded-mbround18.json`) plus a wrapper image (`image/`).
