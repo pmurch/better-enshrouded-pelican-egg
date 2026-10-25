@@ -18,7 +18,7 @@
         "ghcr.io/pmurch/enshrouded-pelican:latest": "ghcr.io/pmurch/enshrouded-pelican:latest"
     },
     "file_denylist": [],
-    "startup": "echo '[egg] phase 1/4: runtime setup' && enshrouded setup && echo '[egg] phase 2/4: install (downloads game on first boot \u2014 SteamCMD progress uses carriage returns, so long quiet stretches are normal)' && { ([ -f enshrouded_server.exe ] && [ \"${UPDATE_ON_START}\" != \"1\" ]) || enshrouded install; } && { enshrouded monitor >/dev/null 2>&1 & } && echo '[egg] phase 3/4: starting server' && enshrouded start && echo '[egg] phase 4/4: following server logs (game errors: logs/server.err)' && tail -c0 -F ./logs/server.log ./logs/server.err ./logs/enshrouded_server.log",
+    "startup": "echo '[egg] phase 1/4: runtime setup' && enshrouded setup && echo '[egg] phase 2/4: install (downloads game on first boot \u2014 SteamCMD progress uses carriage returns, so long quiet stretches are normal)' && { ([ -f enshrouded_server.exe ] && [ \"${UPDATE_ON_START}\" != \"1\" ]) || enshrouded install; } && { enshrouded monitor >/dev/null 2>&1 & } && echo '[egg] phase 3/4: starting server' && enshrouded start && { ( sleep 45; pgrep -f enshrouded_server.exe >/dev/null || echo '[egg] ERROR: enshrouded_server.exe is not running (it exited early). See the log tails above, logs/enshrouded_server.log and steam-2278520.log' ) & } && echo '[egg] phase 4/4: following server logs (last 40 lines of each, then live; game errors: logs/server.err)' && tail -n 40 -F ./logs/server.log ./logs/server.err ./logs/enshrouded_server.log",
     "config": {
         "files": "{}",
         "startup": {

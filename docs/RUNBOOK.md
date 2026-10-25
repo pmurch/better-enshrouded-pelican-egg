@@ -32,7 +32,7 @@ something new.
 | Symptom | Likely cause / action |
 |---|---|
 | Stuck at phase 2, quiet | First-boot download (~8 GB). Check host disk. |
-| Phase 4 reached, no `HostOnline`, low memory | Read `steam-2278520.log` (server root). If it ends after `steamclient_init_registry Failed to connect to Steam` with no game output, the game is launched but silent: raise `WINEDEBUG` (see env table) to see where it stalls. `winebth ZwLoadDriver c0000142` is benign. |
+| `[egg] ERROR: enshrouded_server.exe is not running` (or phase 4 reached, no `HostOnline`, low memory) | Read `steam-2278520.log` (server root). If it ends after `steamclient_init_registry Failed to connect to Steam` with no game output, the game is launched but silent: raise `WINEDEBUG` (see env table) to see where it stalls. `winebth ZwLoadDriver c0000142` is benign. |
 | `server.err` full of DXVK / llvmpipe / EDID lines | Noise from Proton's `xalia.exe`, **not** the server. Harmless; disabled via `PROTON_USE_XALIA=0`. |
 | `ProtonFixes … unit test` warnings | Normal. ProtonFixes only runs for the `waitforexitandrun` verb; upstream uses `run`. |
 | Died on a foreign/newer Wine prefix | System wine touched Proton's prefix. `WINEPREFIX` must stay `~/.wine`; Proton uses `$STEAM_COMPAT_DATA_PATH/pfx`. Use panel **Reinstall** to wipe `.proton`. |
@@ -96,3 +96,15 @@ Proton launcher: `/home/steam/.steam/root/compatibilitytools.d/current/proton`
   the base environment is sound. **Still unknown** why the server is silent and
   small in memory. Next step: `WINEDEBUG=fixme-all,+loaddll,+process,+timestamp`
   and read the log.
+- **2026-10-25 (later still) — root symptom identified.** With
+  `+loaddll,+process,+timestamp`, `steam-2278520.log` shows
+  `enshrouded_server.exe` (pid 0130) launching, loading `steam_api64.dll`,
+  `winex11.drv`, `msacm32`, `winmm`, `wsock32`, then calling
+  `NtTerminateProcess exit_code -1` ~140 ms after start; Proton then exits too.
+  **The server is not hung — it exits immediately** (no SEH crash trace, so a
+  deliberate `exit(-1)`), which is why CPU/memory are flat. `Failed to connect
+  to Steam` precedes it but is not proven to be the cause. The console's
+  `tail -c0` was hiding the game's own `logs/enshrouded_server.log`; startup now
+  tails the last 40 lines and prints an ERROR 45 s after launch if the process
+  is gone. **Next:** read `logs/enshrouded_server.log` and
+  `enshrouded_server.json` from the server root.
