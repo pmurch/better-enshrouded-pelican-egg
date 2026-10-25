@@ -25,7 +25,11 @@ if [ -z "${DISPLAY:-}" ]; then
     echo "$!" > /tmp/xvfb.pid
 fi
 
-MODIFIED_STARTUP=$(eval echo "$(echo "${STARTUP}" | sed -e 's/{{/${/g' -e 's/}}/}/g')")
+# NOTE: no eval here! Wings already expands ${VAR} placeholders itself, and an
+# `eval echo "$STARTUP"` would re-parse the whole `cmd && cmd && ...` chain and
+# execute it inside this command substitution, swallowing every line it prints.
+# The sed only converts the legacy {{VAR}} form for safety.
+MODIFIED_STARTUP=$(echo "${STARTUP}" | sed -e 's/{{/${/g' -e 's/}}/}/g')
 echo ":/home/container$ ${MODIFIED_STARTUP}"
 
 eval "${MODIFIED_STARTUP}" &
