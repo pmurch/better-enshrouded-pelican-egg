@@ -58,10 +58,11 @@ registry or locally on the Wings host:
      and reference it in the egg as `~enshrouded-pelican:latest` — the `~`
      prefix tells Wings it is a local image and to skip pulling. Manual
      rebuilds required on upstream changes; only works on that host.
-2. **Edit the egg JSON**: replace `ghcr.io/YOURORG/...` in `docker_images`
-   with your image reference (and `author` if you like).
-3. **Import the egg** in the panel (Nests → Import).
-4. **Create a server** with **2 allocations**, both TCP+UDP: `15636` (game)
+2. **Import the egg** in the panel (Nests → Import). The `docker_images`
+   entry already points at `ghcr.io/pmurch/enshrouded-pelican:latest` built by
+   this repo's Action (change it if you fork/rename; use the `~`-prefixed
+   local name if you built locally).
+3. **Create a server** with **2 allocations**, both TCP+UDP: `15636` (game)
    and `15637` (query). If your allocation ports differ, set the *Game Port*
    and *Query Port* egg variables to match — Wings forwards the container port
    with the same number as the allocation.

@@ -6,7 +6,7 @@
     },
     "exported_at": "2026-10-25T00:00:00+00:00",
     "name": "Enshrouded (mbround18)",
-    "author": "you@example.com",
+    "author": "pmurch",
     "uuid": "098be1a8-32af-44ee-941e-a33e2ccb390b",
     "description": "Enshrouded dedicated server powered by the mbround18\/enshrouded-docker image. Install, config generation, Proton launch, and graceful shutdown are all handled inside the image; the egg only wires it to Pelican. Game files install into the server root on first boot.",
     "tags": [
@@ -15,7 +15,7 @@
     ],
     "features": [],
     "docker_images": {
-        "ghcr.io\/YOURORG\/enshrouded-pelican:latest": "ghcr.io\/YOURORG\/enshrouded-pelican:latest"
+        "ghcr.io\/pmurch\/enshrouded-pelican:latest": "ghcr.io\/pmurch\/enshrouded-pelican:latest"
     },
     "file_denylist": [],
     "startup": "enshrouded setup && { ([ -f enshrouded_server.exe ] && [ \"${UPDATE_ON_START}\" != \"1\" ]) || enshrouded install; } && { enshrouded monitor >\/dev\/null 2>&1 & } && enshrouded start && tail -c0 -F ./logs\/enshrouded_server.log",
